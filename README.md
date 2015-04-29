@@ -13,7 +13,8 @@ Gephi Configuration
 
 Openstack Configuration 
 =======================
-1. Change ip address and port in openstack-gephi.py to match machine information running Gephi Server 
+1. Install dependencies: pip install -r requirements.txt
+2. Change ip address and port in openstack-gephi.py to match machine information running Gephi Server 
    ( gephi_server and gephi_port)
 2. Run program: python openstack-gephi.py
 
