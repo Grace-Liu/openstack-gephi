@@ -19,6 +19,9 @@ import gephi_client as pygephi
 from authentation import *
 from create_db import *
 
+gephi_server = "161.253.66.62"
+gephi_port = 8080
+
 def create_graph(graph, RouterTable, NetTable, ExtNetList):
 	'''
 		Create a Gephi graph:
@@ -75,7 +78,7 @@ def main():
 	NetTable = create_net_table(NetList, PortList, VMTable)
 
 	'''Create gephi graph'''
-	graph = pygephi.GephiClient('http://161.253.66.62:8080/workspace0', autoflush=True)
+	graph = pygephi.GephiClient('http://%s:%d/workspace0' % (gephi_server, gephi_port), autoflush=True)
 	graph.clean()
 	create_graph(graph, RouterTable, NetTable, ExtNetList)
 
