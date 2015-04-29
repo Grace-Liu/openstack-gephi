@@ -58,22 +58,30 @@ def create_vm_table(VMList):
 	for v in VMList:
 		v = v.to_dict()
 		VMTable[v['id']] = { "name": v['name'], 
-							 "cpu":  None, 
-							 "mem":  None, 
+							 "cpu":  None, "cpu_util": None,
+							 "mem":  None, "mem_util": None,
 							 "disk": None }
 	return VMTable
 
-def update_vm_table(VMTable, ceilo_client):
-	'''
-		query ceilometer, list resource for each virtual machine
-	'''
+def update_vm_table_resource(VMTable, ceilo_client):
 	for v in VMTable:
 		res = ceilo_client.resources.get(v);
 		res = res.to_dict()
 		#print res['metadata']['display_name']
-		VMTable[v]["cpu"] = res['metadata']['vcpus']
-		VMTable[v]["mem"] = res['metadata']['memory_mb']
-		VMTable[v]["disk"] = res['metadata']['disk_gb']
+		VMTable[v]['cpu'] = res['metadata']['vcpus']
+		VMTable[v]['mem'] = res['metadata']['memory_mb']
+		VMTable[v]['disk'] = res['metadata']['disk_gb']
+
+def update_vm_table_util(VMTable, ceilo_client):
+	for v in VMTable:
+		query = [{ "field":"resource", "value":str(v) }]
+		cpu_util = ceilo_client.statistics.list("cpu_util", query)
+		cpu_util = cpu_util[0].to_dict()
+		mem_util = ceilo_client.statistics.list("memory_usage", query)
+		mem_util = mem_util[0].to_dict()
+
+		VMTable[v]['cpu_util'] = "{:.2f}%".format(float(cpu_util['max']) * 100) 
+		VMTable[v]['mem_util'] = "{:.2f}%".format(float(mem_util['max']) * 100) 
 
 def create_router_table(RouterList):
 	'''
@@ -94,12 +102,12 @@ def update_router_table(RouterTable, PortList):
 	for port in PortList['ports']:
 		router_id = port['device_id']
 		if router_id in RouterTable:
-			if RouterTable[router_id]["host"] == None:
-				RouterTable[router_id]["host"] = port["binding:host_id"].split('.')[0]
+			if RouterTable[router_id]['host'] == None:
+				RouterTable[router_id]['host'] = port['binding:host_id'].split('.')[0]
 			for net in port['fixed_ips']:
 				net_id = net['subnet_id']
-				if net_id not in RouterTable[router_id]["subnet"]:
-						RouterTable[router_id]["subnet"].append(net_id)
+				if net_id not in RouterTable[router_id]['subnet']:
+						RouterTable[router_id]['subnet'].append(net_id)
 
 def create_net_table(NetList, PortList, VMTable):
 	'''
@@ -107,16 +115,19 @@ def create_net_table(NetList, PortList, VMTable):
 	'''
 	NetTable = { n:{} for n in NetList }
 	for port in PortList['ports']:
-		if str(port["device_owner"]) == "compute:nova":
-			vmname = VMTable[port["device_id"]]['name']
-			resource = "cpu:" + VMTable[port["device_id"]]['cpu']  \
-				 	 + " mem:" + VMTable[port["device_id"]]['mem'] \
-				 	 + " disk:" + VMTable[port["device_id"]]['disk']  
+		if str(port['device_owner']) == "compute:nova":
+			vmname = VMTable[port['device_id']]['name']
+			resource = "cpu:" + VMTable[port['device_id']]['cpu']  \
+				 	 + " mem:" + VMTable[port['device_id']]['mem'] \
+				 	 + " disk:" + VMTable[port['device_id']]['disk']  
+			util = "cpu_util:" + VMTable[port['device_id']]['cpu_util'] \
+				 + " mem_util:" + VMTable[port['device_id']]['mem_util']
 			for net in port['fixed_ips']:
-				host = port["binding:host_id"].split('.')[0]
+				host = port['binding:host_id'].split('.')[0]
 				NetTable[net['subnet_id']][port['id']] = { "name":vmname, \
-														   "type":port["device_owner"], \
+														   "type":port['device_owner'], \
 														   "host":host, \
 														   "ip":net['ip_address'], \
-														   "resource":resource }
+														   "resource":resource, \
+														   "util": util }
 	return NetTable

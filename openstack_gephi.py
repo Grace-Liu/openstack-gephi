@@ -29,13 +29,14 @@ def create_graph(graph, RouterTable, NetTable, ExtNetList):
 	external_attributes = { "size":50, 'r':1.0, 'g':1.0, 'b':0.0, 'x':1, "label":"External_Net" }
 	router_attributes = { "size":30, 'r':1.0, 'g':0.0, 'b':0.0, 'x':1, "label":None, "host":None } 
 	subnet_attributes = { "size":20, 'r':0.0, 'g':1.0, 'b':0.0, 'x':1 }
-	port_attributes = { "size":10, 'r':0.0, 'g':0.0, 'b':1.0, 'x':1, "label":None, "type":None, "host":None, "ip":None, "resource":None }
+	port_attributes = { "size":10, 'r':0.0, 'g':0.0, 'b':1.0, 'x':1, \
+						"label":None, "type":None, "host":None, "ip":None, "resource":None "util":None }
 
 	for router in RouterTable:
-		router_attributes["label"] = RouterTable[router]["name"]
-		router_attributes["host"] = RouterTable[router]["host"]
+		router_attributes['label'] = RouterTable[router]['name']
+		router_attributes['host'] = RouterTable[router]['host']
 		graph.add_node(str(router), **router_attributes)
-		for net in RouterTable[router]["subnet"]: 
+		for net in RouterTable[router]['subnet']: 
 			if net in ExtNetList:
 				graph.add_node(str(net), **external_attributes)
 				graph.add_edge(router+net, str(router), str(net), False)
@@ -43,11 +44,11 @@ def create_graph(graph, RouterTable, NetTable, ExtNetList):
 				graph.add_node(str(net), **subnet_attributes)
 				graph.add_edge(router+net, str(router), str(net), False)
 				for port in NetTable[net]: 
-					port_attributes["label"] = NetTable[net][port]["name"]
-					port_attributes["type"] = NetTable[net][port]["type"]
-					port_attributes["host"] = NetTable[net][port]["host"]
-					port_attributes["ip"] = NetTable[net][port]["ip"]
-					port_attributes["resource"] = NetTable[net][port]["resource"]
+					port_attributes['label'] = NetTable[net][port]['name']
+					port_attributes['type'] = NetTable[net][port]['type']
+					port_attributes['host'] = NetTable[net][port]['host']
+					port_attributes['ip'] = NetTable[net][port]['ip']
+					port_attributes['resource'] = NetTable[net][port]['resource']
 					graph.add_node(str(port), **port_attributes)
 					graph.add_edge(net+port, str(net), str(port), False)
 
@@ -66,7 +67,7 @@ def main():
 	
 	'''Create VMTable, RouterTable and NetTable'''
 	VMTable = create_vm_table(VMList)
-	update_vm_table(VMTable, ceilo_client)
+	update_vm_table_resource(VMTable, ceilo_client)
 	RouterTable = create_router_table(RouterList)
 	update_router_table(RouterTable, PortList)
 	NetTable = create_net_table(NetList, PortList, VMTable)
