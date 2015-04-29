@@ -51,7 +51,6 @@ def list_extnets(neutron_client):
 
 def create_vm_table(VMList):
 	'''
-		query ceilometer, list resource for each virtual machine
 		create VMTable { id: name, cpu, mem, disk } and add resource info 
 	'''
 	VMTable = {}
@@ -65,6 +64,9 @@ def create_vm_table(VMList):
 	return VMTable
 
 def update_vm_table(VMTable, ceilo_client):
+	'''
+		query ceilometer, list resource for each virtual machine
+	'''
 	for v in VMTable:
 		res = ceilo_client.resources.get(v);
 		res = res.to_dict()
