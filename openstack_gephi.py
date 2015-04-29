@@ -30,7 +30,7 @@ def create_graph(graph, RouterTable, NetTable, ExtNetList):
 	router_attributes = { "size":30, 'r':1.0, 'g':0.0, 'b':0.0, 'x':1, "label":None, "host":None } 
 	subnet_attributes = { "size":20, 'r':0.0, 'g':1.0, 'b':0.0, 'x':1 }
 	port_attributes = { "size":10, 'r':0.0, 'g':0.0, 'b':1.0, 'x':1, \
-						"label":None, "type":None, "host":None, "ip":None, "resource":None "util":None }
+						"label":None, "type":None, "host":None, "ip":None, "resource":None, "util":None }
 
 	for router in RouterTable:
 		router_attributes['label'] = RouterTable[router]['name']
@@ -49,6 +49,7 @@ def create_graph(graph, RouterTable, NetTable, ExtNetList):
 					port_attributes['host'] = NetTable[net][port]['host']
 					port_attributes['ip'] = NetTable[net][port]['ip']
 					port_attributes['resource'] = NetTable[net][port]['resource']
+					port_attributes['util'] = NetTable[net][port]['util']
 					graph.add_node(str(port), **port_attributes)
 					graph.add_edge(net+port, str(net), str(port), False)
 
@@ -68,6 +69,7 @@ def main():
 	'''Create VMTable, RouterTable and NetTable'''
 	VMTable = create_vm_table(VMList)
 	update_vm_table_resource(VMTable, ceilo_client)
+	update_vm_table_util(VMTable, ceilo_client)
 	RouterTable = create_router_table(RouterList)
 	update_router_table(RouterTable, PortList)
 	NetTable = create_net_table(NetList, PortList, VMTable)

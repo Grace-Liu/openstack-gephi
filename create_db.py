@@ -58,9 +58,10 @@ def create_vm_table(VMList):
 	for v in VMList:
 		v = v.to_dict()
 		VMTable[v['id']] = { "name": v['name'], 
-							 "cpu":  None, "cpu_util": None,
-							 "mem":  None, "mem_util": None,
-							 "disk": None }
+							 "cpu":  None, 
+							 "mem":  None, 
+							 "disk": None, 
+							 "cpu_util": None }
 	return VMTable
 
 def update_vm_table_resource(VMTable, ceilo_client):
@@ -76,12 +77,8 @@ def update_vm_table_util(VMTable, ceilo_client):
 	for v in VMTable:
 		query = [{ "field":"resource", "value":str(v) }]
 		cpu_util = ceilo_client.statistics.list("cpu_util", query)
-		cpu_util = cpu_util[0].to_dict()
-		mem_util = ceilo_client.statistics.list("memory_usage", query)
-		mem_util = mem_util[0].to_dict()
-
-		VMTable[v]['cpu_util'] = "{:.2f}%".format(float(cpu_util['max']) * 100) 
-		VMTable[v]['mem_util'] = "{:.2f}%".format(float(mem_util['max']) * 100) 
+		cpu = cpu_util[0].to_dict()
+		VMTable[v]['cpu_util'] = "{:.2f}%".format(float(cpu['avg']) * 100) 
 
 def create_router_table(RouterList):
 	'''
@@ -120,8 +117,7 @@ def create_net_table(NetList, PortList, VMTable):
 			resource = "cpu:" + VMTable[port['device_id']]['cpu']  \
 				 	 + " mem:" + VMTable[port['device_id']]['mem'] \
 				 	 + " disk:" + VMTable[port['device_id']]['disk']  
-			util = "cpu_util:" + VMTable[port['device_id']]['cpu_util'] \
-				 + " mem_util:" + VMTable[port['device_id']]['mem_util']
+			util = "cpu_util:" + VMTable[port['device_id']]['cpu_util'] 
 			for net in port['fixed_ips']:
 				host = port['binding:host_id'].split('.')[0]
 				NetTable[net['subnet_id']][port['id']] = { "name":vmname, \
