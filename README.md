@@ -1,4 +1,4 @@
-# Openstack-Gephi
+Openstack-Gephi
 =====
 A tool to export openstack network topology, node information into Gephi
 
